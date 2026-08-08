@@ -77,7 +77,6 @@ juce_add_plugin(
   FORMATS
     Standalone
     AU
-    AAX
     VST3
   IS_SYNTH
     FALSE
