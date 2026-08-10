@@ -57,7 +57,8 @@ include(cmake/CompilerWarnings.cmake)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   # Sets the Windows VST3 installation location to one
   # that doesn't require elevated permissions
-  set_directory_properties(PROPERTIES JUCE_VST3_COPY_DIR "$ENV{LOCALAPPDATA}/Programs/Common/VST3")
+ set_directory_properties(PROPERTIES JUCE_VST3_COPY_DIR "$ENV{LOCALAPPDATA}/Programs Files/Common Files/VST3")
+
 endif()
 
 # Adds a plugin target.
@@ -106,7 +107,7 @@ juce_add_binary_data(tremolo_plugin_assets
   SOURCES
     assets/Background.png
     assets/Logo.png
-    # TODO: Add custom font files
+    
 )
 
 add_library(tremolo::tremolo_plugin_assets ALIAS tremolo_plugin_assets)
