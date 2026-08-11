@@ -84,7 +84,6 @@ void updateLfoWaveform() {
     juce::dsp::Oscillator<float> { triangle }
   };
 
-
   LfoWaveform currentLfo {LfoWaveform::sine};
   LfoWaveform lfoToSet = currentLfo;
 };
