@@ -56,6 +56,12 @@ void PluginProcessor::prepareToPlay(double sampleRate,
   // initialization that you need, e.g., allocate memory.
 
   tremolo.prepare(sampleRate, expectedMaxFramesPerBlock);
+
+  bypassTransitionSmoother.prepare( {
+    .sampleRate = sampleRate,
+    .maximumBlockSize = static_cast<juce::uint32>(expectedMaxFramesPerBlock),
+    .numChannels = static_cast<juce::uint32>(juce::jmax(getTotalNumInputChannels(), getTotalNumOutputChannels()))
+  });
 }
 
 void PluginProcessor::releaseResources() {
@@ -102,12 +108,21 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     buffer.clear(channelToClear, 0, buffer.getNumSamples());
   }
 
-  // TODO: update parameters
+  //  update parameters
   tremolo.setModulationRate(parameters.rate.get());
-  // TODO: check for bypass
+  bypassTransitionSmoother.setBypass(parameters.bypassed.get());
+  tremolo.setLfoWaveform(static_cast<Tremolo::LfoWaveform>(parameters.waveform.getIndex()));
+  
+  //  check for bypass
+  if (parameters.bypassed.get() && !bypassTransitionSmoother.isTransitioning()) {
+    return;
+  }
 
+  bypassTransitionSmoother.setDryBuffer(buffer);
   // apply tremolo
   tremolo.process(buffer);
+
+  bypassTransitionSmoother.mixToWetBuffer(buffer);
 }
 
 bool PluginProcessor::hasEditor() const {
@@ -135,6 +150,10 @@ void PluginProcessor::setStateInformation(const void* data, int sizeInBytes) {
   juce::ignoreUnused(data, sizeInBytes);
 
   // TODO: implement state deserialization from JSON
+}
+
+juce::AudioProcessorParameter* PluginProcessor::getBypassParameter() const {
+  return &parameters.bypassed;
 }
 }  // namespace tremolo
 

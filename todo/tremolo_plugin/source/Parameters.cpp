@@ -2,8 +2,16 @@
 namespace tremolo {
 
 namespace {
-  juce::AudioParameterFloat& crateModulationRateParameter(juce::AudioProcessor& processor) {
+  auto& addParameterToProcessor(juce::AudioProcessor& processor, auto parameter)
+  {
+    auto& parameterReference = *parameter;
+    processor.addParameter(parameter.release());
+    return parameterReference;
+  }
+
+  juce::AudioParameterFloat& createModulationRateParameter(juce::AudioProcessor& processor) {
     constexpr auto versionHint = 1;
+
     auto parameter = std::make_unique<juce::AudioParameterFloat>(
       juce::ParameterID {"modulation.rate", versionHint },
       "Modulation Rate",
@@ -11,13 +19,38 @@ namespace {
       5.0f,
       juce::AudioParameterFloatAttributes().withLabel("Hz")
     );
-    auto& parameterReference = *parameter;
-    processor.addParameter(parameter.release());
-    return parameterReference;
+
+    return addParameterToProcessor(processor, std::move(parameter));
+  }
+
+  juce::AudioParameterBool& createBypassedParameter(juce::AudioProcessor& processor) 
+  {
+    constexpr auto versionHint = 1;
+    auto parameter = std::make_unique<juce::AudioParameterBool>(
+      juce::ParameterID {"bypassed", versionHint },
+      "Bypass",
+      false
+    );
+    return addParameterToProcessor(processor, std::move(parameter));
+  }
+
+  juce::AudioParameterChoice& createWaveformParameter(juce::AudioProcessor& processor)
+  {
+    constexpr auto versionHint = 1;
+    auto parameter = std::make_unique<juce::AudioParameterChoice>(
+      juce::ParameterID {"modulation.waveform", versionHint },
+      "Modulation wafeform",
+      juce::StringArray {"Sine", "Triangle"},
+      0
+    );
+    return addParameterToProcessor(processor, std::move(parameter));
   }
 }
 
-Parameters::Parameters(juce::AudioProcessor& processor) : rate { crateModulationRateParameter(processor) }
+Parameters::Parameters(juce::AudioProcessor& processor) : rate { createModulationRateParameter(processor) },
+                                                          bypassed { createBypassedParameter(processor) },
+                                                          waveform { createWaveformParameter(processor) }
+
 
 // TODO: create parameters
 // TODO: retrieve references to parameters
